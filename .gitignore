@@ -1,0 +1,10 @@
+target/
+*.class
+.classpath
+.project
+.settings/
+bin/
+nbproject/private/
+.idea/
+*.iml
+.DS_Store

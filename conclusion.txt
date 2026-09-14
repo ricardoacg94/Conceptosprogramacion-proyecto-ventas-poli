@@ -1,0 +1,176 @@
+=====================================================================
+CONCLUSIONES DEL PROYECTO
+Modulo: Conceptos Fundamentales de Programacion
+Entrega: Generacion y clasificacion de datos
+Institucion: Politecnico Grancolombiano
+=====================================================================
+
+
+JAVIER CRUZ AGUILAR
+RICARDO ANDRES CORONADO GONZALEZ
+ALEJANDRO CIFUENTES OSORIO
+
+
+1. LO APRENDIDO DURANTE EL DESARROLLO DEL PROYECTO
+
+Manejo de archivos planos en Java
+Aprendimos a leer y escribir archivos de texto usando las clases del
+paquete java.io y java.nio. Entendimos la diferencia entre leer linea
+por linea con BufferedReader y escribir con BufferedWriter o
+PrintWriter, y por que es importante cerrar los flujos de datos para
+liberar los recursos del sistema. Tambien entendimos la utilidad del
+bloque try-with-resources, que cierra automaticamente los archivos
+incluso cuando ocurre una excepcion.
+
+Procesamiento y separacion de datos delimitados
+El formato de los archivos usa punto y coma como separador. Aprendimos
+a usar el metodo split para dividir cada linea en sus campos, a
+convertir los textos resultantes a tipos numericos con Integer.parseInt
+y Double.parseDouble, y a validar que cada linea tuviera la cantidad
+correcta de campos antes de intentar procesarla.
+
+Uso de colecciones
+Entendimos cuando conviene cada estructura de datos. Usamos List para
+guardar secuencias de ventas, vendedores y productos, y Map para
+relacionar el ID de un producto con su informacion o el documento de un
+vendedor con el total que recaudo. El Map resulto clave para acumular
+totales de forma eficiente, porque permite buscar un elemento por su
+identificador sin tener que recorrer toda la lista cada vez.
+
+Ordenamiento de datos
+Aprendimos a ordenar colecciones de objetos usando Comparator, y a
+invertir el orden con reversed() para obtener los reportes de mayor a
+menor como pedia el enunciado. Esto nos mostro que Java ya trae
+resueltos los algoritmos de ordenamiento y que lo importante es definir
+bien el criterio de comparacion.
+
+Programacion orientada a objetos y separacion en capas
+Organizamos el proyecto en paquetes con responsabilidades distintas:
+Model para las clases que representan los datos (Vendedor, Producto,
+Venta, DetalleVenta, TipoDocumento), Logic para las reglas de negocio y
+el calculo de los reportes, Persistence para todo lo relacionado con la
+lectura y escritura de archivos, Data_Gen para la generacion de los
+archivos de prueba y UI para la interfaz. Esta separacion hizo que el
+codigo fuera mas facil de entender y de modificar, porque un cambio en
+la forma de leer los archivos no obliga a tocar la logica de los
+reportes.
+
+Generacion de datos pseudoaleatorios
+Implementamos los metodos createSalesMenFile, createProductsFile y
+createSalesManInfoFile usando la clase Random. Aprendimos que los datos
+de prueba deben ser coherentes y no solo aleatorios: los nombres se
+toman de listas de nombres reales, los IDs de producto que aparecen en
+las ventas deben existir en el archivo de productos, y las cantidades
+deben ser valores positivos con sentido.
+
+Manejo de excepciones
+Entendimos la diferencia entre errores que se pueden anticipar y
+errores inesperados. Usamos bloques try-catch para manejar situaciones
+como archivos que no existen, lineas con formato incorrecto o valores
+numericos invalidos, y aprendimos a mostrar mensajes claros al usuario
+en lugar de dejar que el programa se detuviera abruptamente.
+
+Herramientas de desarrollo
+Trabajamos con Maven como gestor del proyecto, entendiendo la funcion
+del archivo pom.xml, la estructura estandar de carpetas src/main/java y
+la configuracion de la version de Java. Tambien aprendimos a usar Git y
+GitHub para llevar el control de versiones del codigo y compartir el
+proyecto mediante un repositorio remoto.
+
+Documentacion y buenas practicas
+Aplicamos los estandares de documentacion Javadoc, usando etiquetas
+como @param, @return y @throws. Cuidamos el nombramiento de variables y
+metodos para que fueran descriptivos, mantuvimos una indentacion
+consistente y evitamos metodos demasiado largos dividiendo las tareas
+en funciones mas pequenas con una sola responsabilidad.
+
+
+2. POSIBLES APLICACIONES EN LA VIDA PROFESIONAL
+
+Procesamiento de archivos en sistemas empresariales
+El intercambio de informacion entre sistemas mediante archivos planos
+sigue siendo muy comun en el sector empresarial. Bancos, aseguradoras,
+operadores logisticos y entidades del Estado intercambian a diario
+archivos en formato CSV o de ancho fijo. Lo practicado en este proyecto
+corresponde directamente a ese tipo de tarea.
+
+Procesos ETL y migracion de datos
+El flujo que construimos, leer datos de un origen, transformarlos,
+consolidarlos y generar una salida ordenada, es exactamente el patron
+de un proceso ETL (extraccion, transformacion y carga). Este tipo de
+procesos se usa constantemente en proyectos de migracion de sistemas,
+carga de bodegas de datos e integracion entre aplicaciones.
+
+Generacion de reportes para la toma de decisiones
+Los dos reportes solicitados, el ranking de vendedores por dinero
+recaudado y el de productos mas vendidos, son informes que cualquier
+area comercial necesita. Saber consolidar datos crudos y presentarlos
+ordenados segun un criterio util es una habilidad aplicable en areas de
+ventas, inventarios, finanzas y analisis de negocio.
+
+Validacion y calidad de la informacion
+Detectar archivos con formato erroneo, IDs de producto inexistentes o
+cantidades negativas nos acerco a los controles de calidad de datos que
+se aplican en entornos reales. En produccion, un dato mal validado
+puede generar errores contables o decisiones equivocadas, por lo que
+esta practica tiene un valor directo en el trabajo profesional.
+
+Generacion de datos de prueba
+Crear datos pseudoaleatorios coherentes es una tecnica usada para
+probar aplicaciones sin exponer informacion real de clientes, algo cada
+vez mas importante por las normas de proteccion de datos personales.
+Esta habilidad es util en roles de desarrollo y de aseguramiento de
+calidad.
+
+Trabajo colaborativo y control de versiones
+El uso de Git y GitHub es un estandar en practicamente cualquier equipo
+de desarrollo. Haber trabajado con commits, ramas y repositorios
+remotos nos prepara para integrarnos a equipos de trabajo reales.
+
+Diseno de software mantenible
+La separacion en capas y el uso de buenas practicas de documentacion
+son criterios que se evaluan en el trabajo profesional. Un codigo que
+otra persona puede leer y modificar sin dificultad reduce costos de
+mantenimiento y facilita el trabajo en equipo.
+
+
+3. DIFICULTADES PRESENTADAS DURANTE EL DESARROLLO
+
+Estructura mixta del archivo de ventas
+La primera linea (CC;307760234) tiene un formato distinto al de las
+lineas siguientes (4;2;). Tuvimos que tratar la cabecera aparte del
+resto del ciclo de lectura.
+
+Punto y coma final en las lineas de producto
+Las lineas de venta terminan con un separador adicional, lo que hacia
+que split devolviera un campo vacio y provocara errores al convertir a
+numero. Se resolvio limpiando la linea y validando la cantidad de
+campos antes de procesarla.
+
+Cruce de tres archivos distintos
+Calcular el dinero recaudado exigia relacionar las ventas con el precio
+del catalogo de productos y con el nombre del vendedor. Entender como
+enlazar los tres conjuntos por sus identificadores fue el punto mas
+dificil del proyecto.
+
+
+Rutas de los archivos de entrada
+Al tener copias de los archivos en la raiz del proyecto y en la carpeta
+Archivos Prueba, el programa no siempre encontraba los datos correctos.
+Aprendimos la diferencia entre rutas relativas y absolutas y desde que
+directorio se ejecuta realmente el programa.
+
+Saltos de linea y codificacion
+Los archivos usan el salto de linea de Windows, y el caracter sobrante
+al final de cada linea causaba fallos al comparar o convertir valores.
+Tambien hubo que especificar UTF-8 para que los nombres con tilde se
+leyeran bien.
+
+Uso de Git y GitHub
+Fue nuestro primer contacto con control de versiones. Nos costo ubicar
+la carpeta del proyecto desde la consola, entender la diferencia entre
+repositorio local y remoto, interpretar las advertencias de LF y CRLF,
+y autenticarnos en GitHub, que ya no acepta la contrasena de la cuenta
+y exige un token de acceso personal. Tambien tuvimos que configurar un
+archivo .gitignore para excluir la carpeta target generada por Maven.
+=====================================================================

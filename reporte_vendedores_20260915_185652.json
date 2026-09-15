@@ -1,0 +1,30 @@
+{
+  "fechaExportacion": "20260915_185652",
+  "vendedores": [
+    {
+      "documento": "886902686",
+      "nombre": "Maria Rodriguez",
+      "totalRecaudado": 55450000.00
+    },
+    {
+      "documento": "151520196",
+      "nombre": "Juan Gomez",
+      "totalRecaudado": 40580000.00
+    },
+    {
+      "documento": "414758271",
+      "nombre": "Carlos Martinez",
+      "totalRecaudado": 40030000.00
+    },
+    {
+      "documento": "864381448",
+      "nombre": "Ana Lopez",
+      "totalRecaudado": 27700000.00
+    },
+    {
+      "documento": "498111176",
+      "nombre": "Carlos Garcia",
+      "totalRecaudado": 8730000.00
+    }
+  ]
+}

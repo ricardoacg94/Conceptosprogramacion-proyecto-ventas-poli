@@ -1,0 +1,35 @@
+{
+  "fechaExportacion": "20260915_185652",
+  "productos": [
+    {
+      "id": "4",
+      "nombre": "Monitor",
+      "precioUnitario": 950000.00,
+      "cantidadVendida": 51
+    },
+    {
+      "id": "5",
+      "nombre": "Impresora",
+      "precioUnitario": 450000.00,
+      "cantidadVendida": 42
+    },
+    {
+      "id": "1",
+      "nombre": "Laptop",
+      "precioUnitario": 2500000.00,
+      "cantidadVendida": 40
+    },
+    {
+      "id": "2",
+      "nombre": "Mouse",
+      "precioUnitario": 80000.00,
+      "cantidadVendida": 23
+    },
+    {
+      "id": "3",
+      "nombre": "Teclado",
+      "precioUnitario": 150000.00,
+      "cantidadVendida": 22
+    }
+  ]
+}

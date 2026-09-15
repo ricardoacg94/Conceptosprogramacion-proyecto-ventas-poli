@@ -326,7 +326,7 @@ public class MainFrame extends javax.swing.JFrame {
         lblTotalGeneral.setText(String.format(java.util.Locale.US, "Total Filtrado: $%.2f", totalGeneral));
     }
 
-    public static void main(String args[]) {
+        public static void iniciarInterfaz(String args[]) { 
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {

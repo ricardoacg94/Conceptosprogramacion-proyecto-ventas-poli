@@ -8,10 +8,11 @@ Requisitos
 - Maven
 
 Ejecución
-1. Ejecutar la clase `Data_Gen.GenerateInfoFiles` para generar
-   los archivos planos de prueba.
-2. Ejecutar la clase principal para generar los reportes de
-   vendedores y productos.
+1. Ejecutar el proyecto.
+2. Generar los archivos de prueba usando el Botón dispuesto (Generar Archivos Prueba).
+3. Cargar Archivos permite cargar archivos csv, estos deben tener el mismo formato de los archivos de prueba.
+4. Exportar datos, permite exportar los datos por vendedor o por producto. Genera adicionalmente un Json para consulta en otros sistemas que se deseen.
+5. Se pueden crear vendedores o Productos, esta en desarrollo asociar ventas y productos nuevos desde el formulario.
 
 Estructura
 - `Model`: clases de dominio (Vendedor, Producto, Venta)

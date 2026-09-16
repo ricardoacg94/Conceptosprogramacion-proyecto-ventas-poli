@@ -8,3 +8,6 @@ nbproject/private/
 .idea/
 *.iml
 .DS_Store
+/vendedor_*.csv
+/reporte_*.csv
+/reporte_*.json

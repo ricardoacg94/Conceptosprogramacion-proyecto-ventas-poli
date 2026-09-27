@@ -136,6 +136,14 @@ public class Service_Ventas {
         ventas.add(venta);
     }
 
+    public void registrarVentaManual(Vendedor vendedor, List<DetalleVenta> detalles) {
+        Venta venta = new Venta(vendedor);
+        for (DetalleVenta dv : detalles) {
+            venta.agregarDetalle(dv);
+        }
+        ventas.add(venta);
+    }
+
     public void exportarReporteVendedores(String rutaDirectorio) throws IOException 
     {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));

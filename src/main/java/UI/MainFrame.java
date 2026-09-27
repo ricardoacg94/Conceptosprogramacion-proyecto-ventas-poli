@@ -13,6 +13,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SpinnerNumberModel;
 
 /**
  *
@@ -24,6 +25,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private Service_Ventas servicio;
     private DefaultTableModel modeloTabla;
+    private javax.swing.JButton btnNuevaVenta;
 
 
     /**
@@ -36,6 +38,10 @@ public class MainFrame extends javax.swing.JFrame {
         modeloTabla = (DefaultTableModel) tablaVentas.getModel();
         setSize(1000, 600);
         setLocationRelativeTo(null);
+
+        btnNuevaVenta = new JButton("Nueva Venta");
+        btnNuevaVenta.addActionListener(evt -> mostrarDialogoNuevaVenta());
+        panelTop.add(btnNuevaVenta);
     }
 
     /**
@@ -215,9 +221,20 @@ public class MainFrame extends javax.swing.JFrame {
         JPanel panel = new JPanel(new GridLayout(4,2));
         panel.add(new JLabel("Tipo:")); panel.add(cmbTipo); panel.add(new JLabel("Doc:")); panel.add(txtDoc);
         panel.add(new JLabel("Nombres:")); panel.add(txtNombres); panel.add(new JLabel("Apellidos:")); panel.add(txtApellidos);
-        
+
         if (JOptionPane.showConfirmDialog(this, panel, "Nuevo Vendedor", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            servicio.agregarVendedor(new Vendedor((String)cmbTipo.getSelectedItem(), txtDoc.getText(), txtNombres.getText(), txtApellidos.getText()));
+            String doc = txtDoc.getText().trim();
+            String nombres = txtNombres.getText().trim();
+            String apellidos = txtApellidos.getText().trim();
+            if (doc.isEmpty() || nombres.isEmpty() || apellidos.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!doc.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "El documento solo debe contener números.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            servicio.agregarVendedor(new Vendedor((String)cmbTipo.getSelectedItem(), doc, nombres, apellidos));
             actualizarComboVendedores();
         }
     }//GEN-LAST:event_btnCrearVendedorActionPerformed
@@ -226,11 +243,26 @@ public class MainFrame extends javax.swing.JFrame {
         JTextField txtId = new JTextField(10); JTextField txtNombre = new JTextField(10); JTextField txtValor = new JTextField(10);
         JPanel panel = new JPanel(new GridLayout(3,2));
         panel.add(new JLabel("ID:")); panel.add(txtId); panel.add(new JLabel("Nombre:")); panel.add(txtNombre); panel.add(new JLabel("Valor:")); panel.add(txtValor);
-        
+
         if (JOptionPane.showConfirmDialog(this, panel, "Nuevo Producto", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            try { servicio.agregarProducto(new Producto(txtId.getText(), txtNombre.getText(), Double.parseDouble(txtValor.getText()))); } 
-            catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valor inválido."); }
-            actualizarComboProductos();
+            String id = txtId.getText().trim();
+            String nombre = txtNombre.getText().trim();
+            String valorStr = txtValor.getText().trim();
+            if (id.isEmpty() || nombre.isEmpty() || valorStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            try {
+                double valor = Double.parseDouble(valorStr);
+                if (valor <= 0) {
+                    JOptionPane.showMessageDialog(this, "El valor debe ser mayor a cero.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                servicio.agregarProducto(new Producto(id, nombre, valor));
+                actualizarComboProductos();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "El valor debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_btnCrearProductoActionPerformed
 
@@ -269,6 +301,100 @@ public class MainFrame extends javax.swing.JFrame {
     private void cmbFiltroVendedorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFiltroVendedorActionPerformed
         actualizarTabla();
     }//GEN-LAST:event_cmbFiltroVendedorActionPerformed
+
+    private void mostrarDialogoNuevaVenta() {
+        if (servicio.getVendedores().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Primero debe agregar vendedores.");
+            return;
+        }
+        if (servicio.getProductos().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Primero debe agregar productos.");
+            return;
+        }
+
+        JDialog dialog = new JDialog(this, "Nueva Venta", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(500, 420);
+        dialog.setLocationRelativeTo(this);
+
+        // Panel superior: selección de vendedor
+        JPanel panelVendedor = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelVendedor.add(new JLabel("Vendedor:"));
+        JComboBox<String> cmbVendedor = new JComboBox<>();
+        for (Vendedor v : servicio.getVendedores()) {
+            cmbVendedor.addItem(v.getDocumento() + " - " + v.getNombres());
+        }
+        panelVendedor.add(cmbVendedor);
+
+        // Panel medio: agregar líneas de producto
+        JPanel panelAgregar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JComboBox<String> cmbProducto = new JComboBox<>();
+        for (Producto p : servicio.getProductos()) {
+            cmbProducto.addItem(p.getIdProducto() + " - " + p.getNombre());
+        }
+        JSpinner spinCantidad = new JSpinner(new SpinnerNumberModel(1, 1, 9999, 1));
+        JButton btnAgregarLinea = new JButton("Agregar");
+        panelAgregar.add(new JLabel("Producto:"));
+        panelAgregar.add(cmbProducto);
+        panelAgregar.add(new JLabel("Cant:"));
+        panelAgregar.add(spinCantidad);
+        panelAgregar.add(btnAgregarLinea);
+
+        DefaultTableModel modeloDetalles = new DefaultTableModel(
+                new String[]{"Producto", "Cantidad", "V. Unitario", "Subtotal"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable tablaDetalles = new JTable(modeloDetalles);
+        JLabel lblTotalVenta = new JLabel("Total: $0.00");
+        lblTotalVenta.setFont(new Font("Arial", Font.BOLD, 13));
+
+        List<DetalleVenta> detallesTemp = new ArrayList<>();
+
+        btnAgregarLinea.addActionListener(e -> {
+            int idx = cmbProducto.getSelectedIndex();
+            if (idx < 0) return;
+            Producto prod = servicio.getProductos().get(idx);
+            int cant = (Integer) spinCantidad.getValue();
+            DetalleVenta dv = new DetalleVenta(prod, cant, 0.0);
+            detallesTemp.add(dv);
+            modeloDetalles.addRow(new Object[]{
+                prod.getNombre(), cant,
+                String.format(java.util.Locale.US, "%.2f", prod.getValorUnidad()),
+                String.format(java.util.Locale.US, "%.2f", dv.getValorTotal())
+            });
+            double total = detallesTemp.stream().mapToDouble(DetalleVenta::getValorTotal).sum();
+            lblTotalVenta.setText(String.format(java.util.Locale.US, "Total: $%.2f", total));
+        });
+
+        JPanel panelProductos = new JPanel(new BorderLayout(5, 5));
+        panelProductos.add(panelAgregar, BorderLayout.NORTH);
+        panelProductos.add(new JScrollPane(tablaDetalles), BorderLayout.CENTER);
+        panelProductos.add(lblTotalVenta, BorderLayout.SOUTH);
+
+        JButton btnGuardar = new JButton("Guardar Venta");
+        JButton btnCancelar = new JButton("Cancelar");
+        JPanel panelBotones = new JPanel();
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        btnGuardar.addActionListener(e -> {
+            if (detallesTemp.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Debe agregar al menos un producto.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Vendedor vendedor = servicio.getVendedores().get(cmbVendedor.getSelectedIndex());
+            servicio.registrarVentaManual(vendedor, detallesTemp);
+            actualizarTabla();
+            dialog.dispose();
+            JOptionPane.showMessageDialog(this, "Venta registrada exitosamente.");
+        });
+
+        dialog.add(panelVendedor, BorderLayout.NORTH);
+        dialog.add(panelProductos, BorderLayout.CENTER);
+        dialog.add(panelBotones, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
 
     private void actualizarComboVendedores() {
         String seleccionado = (String) cmbFiltroVendedor.getSelectedItem();

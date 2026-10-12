@@ -186,34 +186,111 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnGenerarPruebaActionPerformed
 
     private void btnCargarArchivosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarArchivosActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setMultiSelectionEnabled(true);
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File[] files = fileChooser.getSelectedFiles();
-            List<File> ventasFiles = new ArrayList<>();
-            for (File file : files) 
-            {
+        Object[] opciones = {"Cargar Ultima Sesion (Data JSON)", "Seleccionar Archivos CSV"};
+        int eleccion = JOptionPane.showOptionDialog(this,
+                "¿Como desea cargar los datos del sistema?",
+                "Origen de Datos", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        if (eleccion == JOptionPane.YES_OPTION) {
+            try {
+                servicio.cargarDatosMaestros(this::solicitarPrecioProducto);
+                actualizarComboVendedores();
+                actualizarComboProductos();
+                actualizarTabla();
+                JOptionPane.showMessageDialog(this, "Ultima sesion cargada correctamente.");
+            } catch (Service_Ventas.ImportacionCanceladaException ex) {
+                JOptionPane.showMessageDialog(this, "Carga cancelada: no se cargaron datos nuevos.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al cargar la sesion: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else if (eleccion == JOptionPane.NO_OPTION) {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setMultiSelectionEnabled(true);
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File[] archivos = chooser.getSelectedFiles();
+            List<File> archivosVentas = new ArrayList<>();
+            int importadas = 0;
+            int duplicadas = 0;
+            int errores = 0;
+            int canceladas = 0;
+            boolean hayCambios = false;
+            // Primero importar catalogo y vendedores, sin importar el orden de seleccion.
+            for (File archivo : archivos) {
+                String nombre = archivo.getName();
+                if (nombre.startsWith("vendedor_") && nombre.endsWith(".csv")) {
+                    archivosVentas.add(archivo);
+                    continue;
+                }
                 try {
-                    if (file.getName().equals("vendedores.csv")) servicio.procesarArchivoVendedores(file);
-                    else if (file.getName().equals("productos.csv")) servicio.procesarArchivoProductos(file);
-                    else if (file.getName().startsWith("vendedor_")) ventasFiles.add(file);
+                    if (nombre.equalsIgnoreCase("vendedores.csv")) {
+                        servicio.procesarArchivoVendedores(archivo);
+                        hayCambios = true;
+                    } else if (nombre.equalsIgnoreCase("productos.csv")) {
+                        servicio.procesarArchivoProductos(archivo, this::solicitarPrecioProducto);
+                        hayCambios = true;
+                    } else {
+                        errores++;
+                        JOptionPane.showMessageDialog(this, "Nombre de archivo no reconocido: " + nombre,
+                                "Aviso", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (Service_Ventas.ImportacionCanceladaException ex) {
+                    canceladas++;
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error cargando archivo maestro: " + file.getName());
+                    errores++;
+                    JOptionPane.showMessageDialog(this, "Error en " + nombre + ": " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-
-            for (File file : ventasFiles) {
+            for (File archivo : archivosVentas) {
                 try {
-                    servicio.procesarArchivoVentas(file);
+                    if (servicio.procesarArchivoVentas(archivo, this::solicitarPrecioProducto)) {
+                        importadas++;
+                        hayCambios = true;
+                    } else {
+                        duplicadas++;
+                        // Guardar migracion de huellas de archivos cargados en JSON antiguos.
+                        hayCambios = true;
+                    }
+                } catch (Service_Ventas.ImportacionCanceladaException ex) {
+                    canceladas++;
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error cargando ventas: " + file.getName());
+                    errores++;
+                    JOptionPane.showMessageDialog(this, "Error en " + archivo.getName() + ": " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+            if (hayCambios) servicio.sincronizarArchivosConstantes();
             actualizarComboVendedores();
             actualizarComboProductos();
             actualizarTabla();
+            JOptionPane.showMessageDialog(this,
+                    "Importacion finalizada.\nVentas nuevas: " + importadas
+                    + "\nVentas duplicadas omitidas: " + duplicadas
+                    + "\nArchivos cancelados: " + canceladas + "\nArchivos con error: " + errores);
         }
     }//GEN-LAST:event_btnCargarArchivosActionPerformed
+
+    /** Pregunta expresamente el precio base; admite decimales con punto o coma. */
+    private Double solicitarPrecioProducto(String id, String nombre) {
+        while (true) {
+            String valor = JOptionPane.showInputDialog(this,
+                    "El producto '" + nombre + "' (ID " + id + ") no tiene precio base valido.\n"
+                    + "Digite su precio base (mayor que 0).\n"
+                    + "Cancelar detiene la importacion del archivo actual.",
+                    "Precio base obligatorio", JOptionPane.QUESTION_MESSAGE);
+            if (valor == null) return null;
+            try {
+                double precio = Double.parseDouble(valor.trim().replace(',', '.'));
+                if (Double.isFinite(precio) && precio > 0) return precio;
+            } catch (NumberFormatException ex) {
+                // Mostrar explicacion y permitir reintento.
+            }
+            JOptionPane.showMessageDialog(this,
+                    "Ingrese un precio positivo valido (ejemplo: 125000 o 125000.50).",
+                    "Precio invalido", JOptionPane.WARNING_MESSAGE);
+        }
+    }
 
     private void btnCrearVendedorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearVendedorActionPerformed
         JTextField txtDoc = new JTextField(10); JTextField txtNombres = new JTextField(10); JTextField txtApellidos = new JTextField(10);
@@ -235,6 +312,7 @@ public class MainFrame extends javax.swing.JFrame {
                 return;
             }
             servicio.agregarVendedor(new Vendedor((String)cmbTipo.getSelectedItem(), doc, nombres, apellidos));
+            servicio.sincronizarArchivosConstantes();
             actualizarComboVendedores();
         }
     }//GEN-LAST:event_btnCrearVendedorActionPerformed
@@ -259,6 +337,7 @@ public class MainFrame extends javax.swing.JFrame {
                     return;
                 }
                 servicio.agregarProducto(new Producto(id, nombre, valor));
+                servicio.sincronizarArchivosConstantes();
                 actualizarComboProductos();
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "El valor debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);

@@ -12,6 +12,18 @@ import java.util.Random;
  */
 public class GenerateInfoFiles {
 
+    public static void main(String[] args) {
+        try {
+            generarArchivosPrueba();
+            System.out.println("Archivos de prueba generados exitosamente:");
+            System.out.println("  - productos.csv");
+            System.out.println("  - vendedores.csv");
+            System.out.println("  - vendedor_[id].csv (5 archivos, uno por vendedor)");
+        } catch (Exception e) {
+            System.err.println("Error al generar los archivos de prueba: " + e.getMessage());
+        }
+    }
+
 private static final String[] NOMBRES = {"Carlos", "Ana", "Luis", "Maria", "Juan", "Pedro", "Laura"};
 private static final String[] APELLIDOS = {"Gomez", "Perez", "Rodriguez", "Martinez", "Lopez", "Garcia"};
 private static final String[] TIPOS_DOC = {"CC", "CE", "TI"};

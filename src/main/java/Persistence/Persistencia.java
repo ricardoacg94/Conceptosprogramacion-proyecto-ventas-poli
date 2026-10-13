@@ -2,8 +2,15 @@ package Persistence;
 
 import Model.Producto;
 import Model.Vendedor;
+import Model.DatosMaestros;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +25,48 @@ import java.util.Map;
  * @author Grupo Proyecto Ventas
  */
 public class Persistencia {
+    
+    private static final String FOLDER_PATH = "Data";
+    private static final String JSON_PATH = FOLDER_PATH + "/datos_maestros.json";
+    
+    /** Guarda JSON por reemplazo atomico: un fallo no destruye la ultima sesion. */
+    public static void guardarDatosMaestros(DatosMaestros datos) {
+        File directorio = new File(FOLDER_PATH);
+        if (!directorio.exists() && !directorio.mkdirs())
+            throw new UncheckedIOException(new IOException("No se pudo crear el directorio Data"));
+
+        Path destino = new File(JSON_PATH).toPath();
+        Path temporal = null;
+        try {
+            temporal = Files.createTempFile(directorio.toPath(), "datos_maestros_", ".tmp");
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(temporal.toFile()), StandardCharsets.UTF_8)) {
+                gson.toJson(datos, writer);
+            }
+            try {
+                Files.move(temporal, destino, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporal, destino, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo guardar la sesion en Data/datos_maestros.json", e);
+        } finally {
+            if (temporal != null) {
+                try { Files.deleteIfExists(temporal); } catch (IOException ignored) { }
+            }
+        }
+    }
+
+    public static DatosMaestros cargarDatosMaestros() {
+        File file = new File(JSON_PATH);
+        if (!file.exists()) return null;
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+            return gson.fromJson(reader, DatosMaestros.class);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo leer el JSON maestro", e);
+        }
+    }
 
     /**
      * Lee un archivo CSV separado por punto y coma y devuelve sus lineas
@@ -35,7 +84,9 @@ public class Persistencia {
             String linea;
             while ((linea = br.readLine()) != null) 
             {
-                datos.add(linea.split(";"));
+                if (linea.trim().isEmpty()) continue;
+                if (datos.isEmpty() && linea.startsWith("\uFEFF")) linea = linea.substring(1);
+                datos.add(linea.split(";", -1));
             }
         }
         return datos;
